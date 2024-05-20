@@ -1,0 +1,13 @@
+ExtDef id var,procedure后应为标识符。
+ExtDef ExtDefRest1 漏掉了'，'或'；'。
+LocalVariableDeclaration IDList 语句之间漏了'；'。
+IDList IDList 语句之间漏了'；'。
+CallStmtRest ';' 语句之间漏了'；'。
+Exp ExpExtend 语句之间漏了'；'。
+ReturnStmt ';' 语句之间漏了'；'。
+BreakStmt ';' 语句之间漏了'；'。
+AssignmentStmtRest '=' 赋值语句左部标识符后应是赋值号'='。
+VarList VarListRest 表达式中漏掉右括号')'。
+LoopStmt Stmt while循环缺少语句
+ExtDefRest2 ExtDefRest2 漏掉了'，'或'；'。
+Term ';' 语句之间漏了'；'。

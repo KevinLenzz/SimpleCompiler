@@ -1,0 +1,47 @@
+All→Program #
+Program→ExtDefList
+ExtDefList→ExtDef ExtDefList|ε
+ExtDef→TYPE id ExtDefRest1
+ExtDefRest1→ExtDefRest2 ';'|FunDecRest CompSt
+ExtDefRest2→',' id ExtDefRest2|ε
+TYPE→'int'|'float'|'string'
+FunDecRest→'(' VarList ')'
+VarList→TYPE id VarListRest|ε
+VarListRest→',' TYPE id VarListRest|ε
+CompSt→'{' StmtList '}'
+StmtList→Stmt StmtList|ε
+Stmt→ConditionalStmt|LoopStmt|ACS|ReturnStmt|BreakStmt|LocalVariableDeclaration|CompSt|ContinueStmt|';'
+ACS→id ACStmt
+LocalVariableDeclaration→TYPE id IDList P ';'
+IDList→',' id IDList|ε
+P→ε
+ACStmt→CallStmtRest|AssignmentStmtRest
+CallStmtRest→'(' ActParamList ')' ';'
+ActParamList→ε|Exp ActParamListExtend
+ActParamListExtend→',' Exp ActParamListExtend|ε
+AssignmentStmtRest→'=' Exp ';'
+ConditionalStmt→'if' '(' ConditionalExp ')' M1 IfBlock
+IfBlock→Stmt N ElseBlock
+ElseBlock→'else' M2 Stmt|ε
+N→ε
+M1→ε
+M2→ε
+LoopStmt→'while' M4 '(' ConditionalExp ')' M5 Stmt M3
+M3→ε
+M4→ε
+M5→ε
+ReturnStmt→'return' ExpOrVoid ';'
+ExpOrVoid→Exp|ε
+BreakStmt→'break' ';'
+ContinueStmt→'continue' ';'
+Exp→Term ExpExtend
+ExpExtend→'+' Term ExpExtend|'-' Term ExpExtend|ε
+Term→Factor TermExtend
+TermExtend→'*' Factor TermExtend|'/' Factor TermExtend|ε
+Factor→id|INTC|DECI|'(' Exp ')'|'getReturn' ACS
+ConditionalExp→RelationExp OrExp
+OrExp→'or' RelationExp OrExp|ε
+RelationExp→CompExp AndExp
+AndExp→'and' CompExp AndExp|ε
+CompExp→Exp CmpOp Exp
+CmpOp→'<'|'<='|'>'|'>='|'=='|'!='

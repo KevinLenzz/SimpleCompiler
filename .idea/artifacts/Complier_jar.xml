@@ -1,0 +1,10 @@
+<component name="ArtifactManager">
+  <artifact name="Complier:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/Complier_jar</output-path>
+    <root id="root">
+      <element id="archive" name="Complier.jar">
+        <element id="module-output" name="Compiler" />
+      </element>
+    </root>
+  </artifact>
+</component>
