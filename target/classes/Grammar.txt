@@ -4,7 +4,7 @@ ExtDefList→ExtDef ExtDefList|ε
 ExtDef→TYPE id ExtDefRest1
 ExtDefRest1→ExtDefRest2 ';'|FunDecRest CompSt
 ExtDefRest2→',' id ExtDefRest2|ε
-TYPE→'int'|'float'|'string'
+TYPE→'int'|'float'|'string'|'void'
 FunDecRest→'(' VarList ')'
 VarList→TYPE id VarListRest|ε
 VarListRest→',' TYPE id VarListRest|ε
@@ -15,8 +15,8 @@ ACS→id ACStmt
 LocalVariableDeclaration→TYPE id IDList P ';'
 IDList→',' id IDList|ε
 P→ε
-ACStmt→CallStmtRest|AssignmentStmtRest
-CallStmtRest→'(' ActParamList ')' ';'
+ACStmt→CallStmtRest ';'|AssignmentStmtRest
+CallStmtRest→'(' ActParamList ')'
 ActParamList→ε|Exp ActParamListExtend
 ActParamListExtend→',' Exp ActParamListExtend|ε
 AssignmentStmtRest→'=' Exp ';'
@@ -38,7 +38,8 @@ Exp→Term ExpExtend
 ExpExtend→'+' Term ExpExtend|'-' Term ExpExtend|ε
 Term→Factor TermExtend
 TermExtend→'*' Factor TermExtend|'/' Factor TermExtend|ε
-Factor→id|INTC|DECI|'(' Exp ')'|'getReturn' ACS
+Factor→id idorFun|INTC|DECI|'(' Exp ')'|STR
+idorFun→ε|CallStmtRest
 ConditionalExp→RelationExp OrExp
 OrExp→'or' RelationExp OrExp|ε
 RelationExp→CompExp AndExp

@@ -1,4 +1,7 @@
 package parser;
+/**
+ * 生成FIRST集
+ */
 
 import java.util.ArrayList;
 import java.util.Arrays;

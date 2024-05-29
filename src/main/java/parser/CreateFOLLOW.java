@@ -1,4 +1,7 @@
 package parser;
+/**
+ * 生成FOLLOW集
+ */
 
 import java.lang.instrument.Instrumentation;
 import java.security.DrbgParameters;

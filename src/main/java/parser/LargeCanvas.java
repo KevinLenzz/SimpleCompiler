@@ -1,4 +1,8 @@
 package parser;
+/**
+ * 可缩放大画布控件
+ * 这个类是网上摘的，用于显示
+ */
 
 import javax.swing.*;
 import javax.swing.tree.TreeCellRenderer;
@@ -8,8 +12,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 
-
-//这个类是网上摘的，用于显示
 public class LargeCanvas extends JPanel {
 
     // 鼠标按下时的坐标 以及 更新后的坐标

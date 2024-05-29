@@ -1,4 +1,8 @@
 package parser;
+/**
+ * 画语法分析树
+ */
+
 import com.sun.source.tree.Tree;
 
 import javax.swing.*;

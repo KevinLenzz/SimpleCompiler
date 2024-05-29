@@ -1,17 +1,21 @@
 package lexer;
 
 import lexer.tokens.*;
+import semantics.Read;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
+/**
+ * 读单词，词法分析器的调用接口
+ */
 public class GetToken {
     static FileReader fis;
 
     static {
         try {
-            fis = new FileReader("src/main/resources/input.txt");
+            fis = new FileReader(Read.sourceText);
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }

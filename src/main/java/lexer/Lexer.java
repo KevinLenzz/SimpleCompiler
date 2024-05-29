@@ -1,4 +1,7 @@
 package lexer;
+/**
+ * 词法分析器主要部分
+ */
 
 import lexer.tokens.*;
 

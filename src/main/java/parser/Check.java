@@ -1,4 +1,8 @@
 package parser;
+/**
+ * LL1栈语法分析（循环调用GetToken）
+ * 语法分析器的调用接口
+ */
 
 import lexer.GetToken;
 import lexer.Type;
@@ -31,10 +35,10 @@ public class Check {
     private static void errorDefined(Token errorToken,String dfedStr){
         System.out.println(RED+"ParserError in "+errorToken.line+":"+errorToken.col+" "+dfedStr);
     }
-    private static void reuseSynthetic() throws IOException {
+    private static void reuseSynthetic() throws IOException {//用于终结符的某些复用的语句
         CheckStack.pop();
         TreeNode now=TreeLayerList.getFirst();
-        if(now.V.equals("id")||now.V.equals("INTC")||now.V.equals("DECI")||now.V.equals("\'break\'")||now.V.equals("\'continue\'")||now.V.equals("\'return\'")||now.V.equals("\'int\'")||now.V.equals("\'float\'")||now.V.equals("\'string\'")) {
+        if(now.V.equals("id")||now.V.equals("INTC")||now.V.equals("DECI")||now.V.equals("STR")||now.V.equals("\'break\'")||now.V.equals("\'continue\'")||now.V.equals("\'return\'")||now.V.equals("\'int\'")||now.V.equals("\'float\'")||now.V.equals("\'string\'")||now.V.equals("\'void\'")) {
             now.token = p;
             now.token.str=now.token.str.replace("\'","");
         }
@@ -56,11 +60,27 @@ public class Check {
         p=GetToken.getToken();
     }
     public static void check() throws IOException {
-        ReadP.read("src/main/resources/Grammar.txt");
+        try{
+            ReadP.read(ClassLoader.getSystemResource("Grammar.txt").getPath());
+        }catch (Exception e){
+            try{
+                ReadP.read("Grammar.txt");
+            }catch (Exception exp){
+                System.out.println(RED+"请把Grammar.txt放在和Compiler.jar同一个目录下");
+            }
+        }
         CreateFIRST.create();
         CreateFOLLOW.create();
         CreateM.create();
-        CreateErrorMap.create("src/main/resources/ErrorMapping.txt");
+        try {
+            CreateErrorMap.create(ClassLoader.getSystemResource("ErrorMapping.txt").getPath());
+        }catch (Exception e){
+            try{
+                ReadP.read("ErrorMapping.txt");
+            }catch (Exception exp){
+                System.out.println(RED+"请把ErrorMapping.txt放在和Compiler.jar同一个目录下");
+            }
+        }
         PanicMode.createSet();
         /*System.out.println("P:"+Store.P);
         System.out.println("VN:"+Store.VN);*/
@@ -87,6 +107,8 @@ public class Check {
                 if(X.equals("id")&&p.type== Type.ID){
                     reuseSynthetic();
                 }else if(X.equals("INTC")&&p.type== Type.INT){
+                    reuseSynthetic();
+                }else if(X.equals("STR")&&p.type== Type.STR){
                     reuseSynthetic();
                 }else if(X.equals("DECI")&&p.type== Type.FLT){
                     reuseSynthetic();
@@ -121,6 +143,8 @@ public class Check {
                     tmpStr="INTC";
                 }else if(p.type== Type.FLT){
                     tmpStr="DECI";
+                }else if(p.type== Type.STR){
+                    tmpStr="STR";
                 }else if (p.type==Type.END){
                     tmpStr="#";
                     System.out.println(CYAN+"Parser End".formatted());

@@ -2,6 +2,9 @@ package parser;
 
 import java.util.*;
 
+/**
+ * 生成预测分析表
+ */
 public class CreateM {
     public static void create(){
         for(String i:Store.VN){

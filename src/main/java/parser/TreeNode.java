@@ -1,4 +1,7 @@
 package parser;
+/**
+ * 对象：语法分析树节点
+ */
 
 import lexer.tokens.Token;
 

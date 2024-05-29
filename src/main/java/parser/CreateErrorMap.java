@@ -1,4 +1,7 @@
 package parser;
+/**
+ * 对ErrorMapping进行字符串处理
+ */
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;

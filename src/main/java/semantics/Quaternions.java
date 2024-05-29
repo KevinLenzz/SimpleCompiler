@@ -1,5 +1,8 @@
 package semantics;
 
+/**
+ * 符号表（作用域）里四元式
+ */
 public class Quaternions {
     int index;
     String one;

@@ -1,4 +1,7 @@
 package semantics;
+/**
+ * 符号表中的单个函数记录模子
+ */
 
 import java.util.ArrayList;
 import java.util.Collections;

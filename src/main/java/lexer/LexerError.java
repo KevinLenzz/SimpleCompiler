@@ -1,4 +1,7 @@
 package lexer;
+/**
+ * 对象：词法分析错误
+ */
 
 import lexer.tokens.Token;
 

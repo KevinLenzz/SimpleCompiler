@@ -1,4 +1,7 @@
 package parser;
+/**
+ * 存放各种集合
+ */
 
 import java.util.*;
 

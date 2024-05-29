@@ -1,4 +1,7 @@
 package parser;
+/**
+ * 生成合法后继
+ */
 
 import java.util.HashSet;
 

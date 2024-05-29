@@ -1,5 +1,8 @@
 package parser;
 
+/**
+ * 同层节点在画布上的间距计算
+ */
 
 import java.util.ArrayList;
 

@@ -1,4 +1,8 @@
 package semantics;
+/**
+ * 后序遍历计算属性
+ * 生成四元式
+ */
 
 import com.sun.source.tree.Tree;
 import lexer.tokens.Token;
@@ -15,6 +19,7 @@ import java.util.regex.Pattern;
 public class CalAttr {
     public static SymbolTable SymbolTablePointer;
     static String RED = "\u001B[31m";
+    static String YELLOW = "\u001B[33m";
     static ArrayList<Quaternions> QuaternionsPointer;
     static ArrayList<Quaternions> MainQuaternionsPointer;
     static int c=0;
@@ -38,7 +43,7 @@ public class CalAttr {
         }
         count++;
         switch(parent.V){
-            case "VarList"->{
+            case "VarList"->{//注释A
                 if(SymbolTablePointer.funcNames.contains(parent.parent.parent.parent.children.get(1).token.str)){
                     error(parent.parent.parent.parent.children.get(1).token,"Function Redefined");
                 }
@@ -98,9 +103,9 @@ public class CalAttr {
                     if (parent.children.get(0).children.get(0).V.equals("ε")) {
                         String The2add=parent.parent.children.get(1).token.str;
                         if (SymbolTablePointer.recordsNames.contains(The2add)) {
-                            error(parent.parent.children.get(0).children.get(0).token, "Variable Redefine");
+                            error(parent.parent.children.get(0).children.get(0).token, "Variable Redefine:"+The2add);
                         } else {
-                            SymbolTablePointer.records.add(new Symbol(The2add, parent.parent.children.get(0).children.get(0).token.str, false, "0", parent.parent.children.get(0).children.get(0).token.line));
+                            SymbolTablePointer.records.add(new Symbol(The2add, parent.parent.children.get(0).children.get(0).token.str, false, "-", parent.parent.children.get(0).children.get(0).token.line));
                             SymbolTablePointer.recordsNames.add(The2add);
                         }
                     } else {
@@ -113,9 +118,9 @@ public class CalAttr {
                         }
                         for (String aSymbol : symbol2add) {
                             if (SymbolTablePointer.recordsNames.contains(aSymbol)) {
-                                error(parent.parent.children.get(0).children.get(0).token, "Variable Redefine");
+                                error(parent.parent.children.get(0).children.get(0).token, "Variable Redefine"+aSymbol);
                             } else {
-                                SymbolTablePointer.records.add(new Symbol(aSymbol, parent.parent.children.get(0).children.get(0).token.str, false, "0", parent.parent.children.get(0).children.get(0).token.line));
+                                SymbolTablePointer.records.add(new Symbol(aSymbol, parent.parent.children.get(0).children.get(0).token.str, false, "-", parent.parent.children.get(0).children.get(0).token.line));
                                 SymbolTablePointer.recordsNames.add(aSymbol);
                             }
                         }
@@ -123,12 +128,17 @@ public class CalAttr {
                 }else if(parent.children.get(1).V.equals("CompSt")){
                     for(Symbol aSym:SymbolTablePointer.records){
                         if(!aSym.USED){
-                            System.out.println("Variable "+aSym.NAME+" is unused");
+                            System.out.println(YELLOW+"Variable "+aSym.NAME+" is unused:"+aSym.LINE_NUM);
                         }
                     }
                     for(Function aFunc:SymbolTablePointer.funcList){
                         if(!aFunc.USED){
-                            System.out.println("Function "+aFunc.NAME+" is unused");
+                            System.out.println(YELLOW+"Function "+aFunc.NAME+" is unused:"+aFunc.LINE_NUM);
+                        }
+                    }
+                    if(!SymbolTablePointer.ReturnTYPE.equals("void")){
+                        if(!SymbolTablePointer.hasReturn){
+                            error(parent.parent.children.get(1).token,"Function "+parent.parent.children.get(1).token.str+" lacks return.");
                         }
                     }
                     SymbolTablePointer=SymbolTablePointer.parent;
@@ -186,18 +196,19 @@ public class CalAttr {
             case "Factor"->{
                 switch(parent.children.get(0).V){
                     case "id":
-                        parent.attribute.put("place",parent.children.get(0).token.str);
-                        SymbolTable tmpPointer=SymbolTablePointer;
-                        while(!tmpPointer.recordsNames.contains(parent.attribute.get("place"))){
-                            tmpPointer=tmpPointer.parent;
-                            if(tmpPointer==null){
-                                error(parent.children.get(0).token,"No Such Variable:"+parent.attribute.get("place"));
-                                break;
+                        if(parent.children.get(1).children.get(0).V.equals("ε")){
+                            parent.attribute.put("place",parent.children.get(0).token.str);
+                            SymbolTable tmpPointer=SymbolTablePointer;
+                            while(!tmpPointer.recordsNames.contains(parent.attribute.get("place"))){
+                                tmpPointer=tmpPointer.parent;
+                                if(tmpPointer==null){
+                                    error(parent.children.get(0).token,"Variable Undefined:"+parent.attribute.get("place"));
+                                    break;
+                                }
                             }
-                        }
-                        if(tmpPointer!=null){
-                            for(var record:tmpPointer.records){
-                                record.USED=true;
+                        }else{
+                            if(parent.children.get(1).children.get(0).V.equals("CallStmtRest")){
+                                parent.attribute.put("place",parent.children.get(1).children.get(0).attribute.get("place"));
                             }
                         }
                         break;
@@ -205,13 +216,11 @@ public class CalAttr {
                     case "DECI":
                         parent.attribute.put("place",parent.children.get(0).token.str);
                         break;
+                    case "STR":
+                        parent.attribute.put("place","\""+parent.children.get(0).token.str+"\"");
+                        break;
                     case "\'(\'":
                         parent.attribute.put("place",parent.children.get(1).attribute.get("place"));
-                        break;
-                    case "\'getReturn\'":
-                        if(parent.children.get(1).children.get(1).children.get(0).V.equals("CallStmtRest")){
-                            parent.attribute.put("place",parent.children.get(1).attribute.get("place"));
-                        }
                         break;
                 }
             }
@@ -275,18 +284,18 @@ public class CalAttr {
                 parent.parent.attribute.put("In",QuaternionsPointer.size());
             }
             case "M1"->{
-                QuaternionsPointer.add(new Quaternions("jnz",(String)parent.parent.children.get(2).attribute.get("place"),"0",QuaternionsPointer.size()+2+""));
+                QuaternionsPointer.add(new Quaternions("jnz",(String)parent.parent.children.get(2).attribute.get("place"),"-",QuaternionsPointer.size()+2+""));
                 parent.attribute.put("quad",QuaternionsPointer.size());
-                QuaternionsPointer.add(new Quaternions("j","0","0","-"));
+                QuaternionsPointer.add(new Quaternions("j","-","-","-"));
             }
             case "M5"->{
-                QuaternionsPointer.add(new Quaternions("jnz", (String) parent.parent.children.get(3).attribute.get("place"),"0",QuaternionsPointer.size()+2+""));
+                QuaternionsPointer.add(new Quaternions("jnz", (String) parent.parent.children.get(3).attribute.get("place"),"-",QuaternionsPointer.size()+2+""));
                 parent.attribute.put("quad",QuaternionsPointer.size());
-                QuaternionsPointer.add(new Quaternions("j","0","0","-"));
+                QuaternionsPointer.add(new Quaternions("j","-","-","-"));
             }
             case "M3"->{
-                QuaternionsPointer.add(new Quaternions("j","0","0",(int)parent.parent.attribute.get("In")+""));
-                QuaternionsPointer.set((int)parent.parent.children.get(5).attribute.get("quad"),new Quaternions("j","0","0",QuaternionsPointer.size()+""));
+                QuaternionsPointer.add(new Quaternions("j","-","-",(int)parent.parent.attribute.get("In")+""));
+                QuaternionsPointer.set((int)parent.parent.children.get(5).attribute.get("quad"),new Quaternions("j","-","-",QuaternionsPointer.size()+""));
                 if(parent.parent.attribute.containsKey("BreakIndex")){
                     QuaternionsPointer.set((int)parent.parent.attribute.get("BreakIndex"),new Quaternions("j","-","-",QuaternionsPointer.size()+""));
                 }
@@ -296,20 +305,35 @@ public class CalAttr {
             }
             case "N"-> {
                 if (parent.parent.children.get(2).children.get(0).V.equals("ε")) {
-                    QuaternionsPointer.set((int)parent.parent.parent.children.get(4).attribute.get("quad"), new Quaternions("j", "0", "0", QuaternionsPointer.size()+""));
+                    QuaternionsPointer.set((int)parent.parent.parent.children.get(4).attribute.get("quad"), new Quaternions("j", "-", "-", QuaternionsPointer.size()+""));
                 } else {
                     parent.attribute.put("TrueBreak",QuaternionsPointer.size());
-                    QuaternionsPointer.add(new Quaternions("j", "0", "0","-"));
-                    QuaternionsPointer.set((int)parent.parent.parent.children.get(4).attribute.get("quad"), new Quaternions("j", "0", "0", QuaternionsPointer.size()+""));
+                    QuaternionsPointer.add(new Quaternions("j", "-", "-","-"));
+                    QuaternionsPointer.set((int)parent.parent.parent.children.get(4).attribute.get("quad"), new Quaternions("j", "-", "-", QuaternionsPointer.size()+""));
                 }
             }
             case "ElseBlock"->{
                 if(!parent.children.get(0).V.equals("ε")){
-                    QuaternionsPointer.set((int) parent.parent.children.get(1).attribute.get("TrueBreak"), new Quaternions("j", "0", "0", QuaternionsPointer.size()+""));
+                    QuaternionsPointer.set((int) parent.parent.children.get(1).attribute.get("TrueBreak"), new Quaternions("j", "-", "-", QuaternionsPointer.size()+""));
                 }
             }
-            case "AssignmentStmtRest"->{
-                QuaternionsPointer.add(new Quaternions("=", (String) parent.children.get(1).attribute.get("place"), "-",parent.parent.parent.children.get(0).token.str));
+            case "AssignmentStmtRest"-> {
+                SymbolTable tmpPointer=SymbolTablePointer;
+                while(!tmpPointer.recordsNames.contains(parent.parent.parent.children.get(0).token.str)){
+                    tmpPointer=tmpPointer.parent;
+                    if(tmpPointer==null){
+                        error(parent.parent.parent.children.get(0).token,"Variable Undefined:"+parent.parent.parent.children.get(0).token.str);
+                        break;
+                    }
+                }
+                if(tmpPointer!=null){
+                    for(var record:tmpPointer.records){
+                        if(record.NAME.equals(parent.parent.parent.children.get(0).token.str)){
+                            QuaternionsPointer.add(new Quaternions("=", (String) parent.children.get(1).attribute.get("place"), "-", parent.parent.parent.children.get(0).token.str));
+                            record.USED=true;
+                        }
+                    }
+                }
             }
             case "BreakStmt"->{
                 TreeNode tmp=parent.parent;
@@ -332,14 +356,14 @@ public class CalAttr {
                         error(parent.children.get(0).token,"");
                         break;
                     }else if(tmp.V.equals("LoopStmt")){
-                        QuaternionsPointer.add(new Quaternions("j","0","0",(int)tmp.attribute.get("In")+""));
+                        QuaternionsPointer.add(new Quaternions("j","-","-",(int)tmp.attribute.get("In")+""));
                         break;
                     }
                     tmp=tmp.parent;
                 }
             }
             case "ActParamList"->{
-                if(parent.children.get(0).equals("ε")){
+                if(parent.children.get(0).V.equals("ε")){
                     SymbolTable tmpPointer=SymbolTablePointer;
                     while(!tmpPointer.funcNames.contains(parent.parent.parent.parent.children.get(0).token.str)){
                         tmpPointer=tmpPointer.parent;
@@ -352,7 +376,7 @@ public class CalAttr {
                         if (tmpPointer.funcNames.contains(parent.parent.parent.parent.children.get(0).token.str)) {
                             for (Function afunc : tmpPointer.funcList) {
                                 if (afunc.NAME.equals(parent.parent.parent.parent.children.get(0).token.str)) {
-                                    if (afunc.HEAD == null) {
+                                    if (afunc.HEAD==null) {
                                         int offset=QuaternionsPointer.size()+1;
                                         QuaternionsPointer.add(new Quaternions("begin",afunc.NAME,afunc.RETURN_TYPE,"-"));
                                         if(!afunc.USED) {
@@ -379,11 +403,23 @@ public class CalAttr {
                     }
                 }
             }
+            case "FunDecRest"->{
+                SymbolTablePointer.ReturnTYPE=parent.parent.parent.children.get(0).children.get(0).token.str;
+            }
             case "ReturnStmt"->{
                 if(parent.children.get(1).children.get(0).V.equals("Exp")){
-                    QuaternionsPointer.add(new Quaternions("return",(String)parent.children.get(1).children.get(0).attribute.get("place"),"-","-"));
+                    if(SymbolTablePointer.ReturnTYPE.equals("void")){
+                        error(parent.children.get(0).token,"This function should not have a returned value.");
+                    }else {
+                        QuaternionsPointer.add(new Quaternions("return", (String) parent.children.get(1).children.get(0).attribute.get("place"), "-", "-"));
+                        SymbolTablePointer.hasReturn=true;
+                    }
                 }else{
-                    QuaternionsPointer.add(new Quaternions("return","-","-","-"));
+                    if(SymbolTablePointer.ReturnTYPE.equals("void")){
+                        QuaternionsPointer.add(new Quaternions("return","-","-","-"));
+                    }else{
+                        error(parent.children.get(0).token,"Return in this function need a returned value.");
+                    }
                 }
             }
             case "ActParamListExtend"->{
@@ -431,7 +467,7 @@ public class CalAttr {
                                         }
                                         String newTemp=newtemp();
                                         QuaternionsPointer.add(new Quaternions("call",afunc.NAME,""+ActPara.size(),newTemp));
-                                        tmp.parent.parent.parent.attribute.put("place",newTemp);
+                                        tmp.parent.attribute.put("place",newTemp);
                                     } else {
                                         error(tmp.parent.parent.parent.children.get(0).token, "Parameter Amount Mismatchs");
                                     }
@@ -455,8 +491,8 @@ public class CalAttr {
                     tmpTN=tmpTN.children.get(2);
                 }
                 for(String aVar:var2Define){
-                    if(SymbolTablePointer.records.contains(aVar)){
-                        error(parent.parent.children.get(0).children.get(0).token,"Variable "+aVar+" Redefined");
+                    if(SymbolTablePointer.recordsNames.contains(aVar)){
+                        error(parent.parent.children.get(0).children.get(0).token,"Variable Redefine:"+aVar);
                     }else{
                         SymbolTablePointer.records.add(new Symbol(aVar,Type,false,"",parent.parent.children.get(0).children.get(0).token.line));
                         SymbolTablePointer.recordsNames.add(aVar);
@@ -466,12 +502,12 @@ public class CalAttr {
             case "Program"->{
                 for(Symbol aSym:SymbolTablePointer.records){
                     if(!aSym.USED){
-                        System.out.println("Global Variable "+aSym.NAME+" is unused");
+                        System.out.println(YELLOW+"Global Variable "+aSym.NAME+" is unused:"+aSym.LINE_NUM);
                     }
                 }
                 for(Function aFunc:SymbolTablePointer.funcList){
                     if(!aFunc.USED&&!aFunc.NAME.equals("main")){
-                        System.out.println("Global Function "+aFunc.NAME+" is unused");
+                        System.out.println(YELLOW+"Global Function "+aFunc.NAME+" is unused:"+aFunc.LINE_NUM);
                     }
                 }
             }
@@ -481,13 +517,13 @@ public class CalAttr {
         System.out.println(RED+"SemanticError in "+errorToken.line+":"+errorToken.col);
         switch(errorToken.str){
             case "break"->{
-                System.out.println("——The break is out of loop");
+                System.out.println("   ——The break is out of loop");
             }
             case "continue"->{
-                System.out.println("——The continue is out of loop");
+                System.out.println("   ——The continue is out of loop");
             }
             default -> {
-                System.out.println("——"+info);
+                System.out.println("   ——"+info);
             }
         }
     }

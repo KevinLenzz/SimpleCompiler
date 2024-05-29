@@ -2,6 +2,9 @@ package lexer;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * 关键字与符号集合
+ */
 public class Idxs {
     public final static Map<String, Integer> kwdidx = Map.ofEntries (
             Map.entry("int", 1),
@@ -15,7 +18,8 @@ public class Idxs {
             Map.entry("and", 9),
             Map.entry("or", 10),
             Map.entry("continue", 11),
-            Map.entry("getReturn", 12)
+            Map.entry("getReturn", 12),
+            Map.entry("void", 13)
     );
     public final static Map<Character, Integer> sprtidx = Map.of (
         '(', 1,
